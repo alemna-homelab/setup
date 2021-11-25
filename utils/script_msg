@@ -1,0 +1,21 @@
+#!/bin/bash
+
+# TODO:
+#    ORIGINAL_IFS=$IFS
+#    IFS="/"
+#    function collapse_path {
+#        read -ra ITEMS <<< "$1"
+#        for i in "${ITEMS[@]}"; do
+#            if 
+#    }
+#    IFS=$ORIGINAL_IFS
+#    PREFIX="SETUP/$(realpath --relative-to=$SETUP_REPO $0)"
+
+function script_msg {
+    MSGTEXT="SETUP @ $0: $1"
+    logger "$MSGTEXT"
+    echo "$MSGTEXT"
+    DATETEXT=$(date +"%b %d %H:%M:%S")
+    LOGTEXT="$DATETEXT $MSGTEXT"
+    echo "$LOGTEXT" >> /var/log/homelab-setup-script.log
+}
