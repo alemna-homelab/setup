@@ -21,7 +21,7 @@ def msg(text: str, priority: int = LOG_INFO):
     # Priority levels are (high to low):
     #   LOG_EMERG, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
     #   LOG_NOTICE, LOG_INFO, LOG_DEBUG
-    _msg = f"{__file__}: {text}"
+    _msg = f"SETUP @ {Path(__file__).resolve()}: {text}"
     print(_msg)
     syslog(priority, _msg)
 
