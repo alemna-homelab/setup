@@ -27,6 +27,13 @@ def msg(text: str, priority: int = LOG_INFO):
 
 
 def is_raspberry_pi():
+    # Checks for a environmental variable. If it's present and == 0,
+    # this function will skip the rest of the checks and return True.
+    # Useful for debugging in a docker container, etc.
+    env_var_name = "CHECK_FOR_RPI"
+    if env_var_name in os.environ and os.environ[env_var_name] == "0":
+        return True
+
     # SOURCE: https://raspberrypi.stackexchange.com/a/118473
     try:
         with io.open("/sys/firmware/devicetree/base/model", "r") as m:
