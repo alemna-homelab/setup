@@ -1,4 +1,6 @@
-# setup
+# README
+
+## setup
 
 1. Clone this repository:
 

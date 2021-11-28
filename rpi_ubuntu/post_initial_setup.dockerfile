@@ -16,10 +16,10 @@ RUN git clone https://github.com/alemna-homelab/setup.git /tmp/setup
 # Docker suggests use of reverse DNS notation for labels using a domain
 # you own, in order to avoid conflict with labels that may be added by
 # other automated tools
-LABEL org.alexanderlemna.branch "wip-playbooks"
+LABEL org.alexanderlemna.branch "dev"
 
 # Comment out the line below if you want to stay on main branch, or
 # replace 'wip-playbooks' with different branch name as needed.
-RUN cd /tmp/setup && git checkout wip-playbooks && sudo --preserve-env python3 auto_setup.py
+RUN cd /tmp/setup && git checkout dev && sudo --preserve-env python3 auto_setup.py
 
 CMD ["/bin/bash"]

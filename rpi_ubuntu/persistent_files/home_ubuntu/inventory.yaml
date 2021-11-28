@@ -1,3 +1,6 @@
+# See the README.md file in this directory or the hosts.yaml file
+# in the ansible_defaults folder.
+---
 all:
   hosts:
     this_rpi:
