@@ -35,11 +35,18 @@ sudo apt-get install --assume-yes \
 script_msg "INSTALLING docker"
 curl -fsSL https://get.docker.com -o get-docker.sh
 sudo sh get-docker.sh
-
+    
 dockerd-rootless-setuptool.sh install
 
-# ANSIBLE
-script_msg "RUNNING useradd --system --create-home --shell /bin/false ansible"
+script_msg "INSTALLING python 'docker' module (for later ansible use)"
+sudo apt-get install --assume-yes \
+    python3-pip
+sudo python3 -m pip install \
+    docker
+    docker-compose
+
+# Setting up separate user for non-root Docker
+script_msg "RUNNING useradd --system --create-home --shell /bin/false sysusr"
 useradd \
     --system \
     --create-home \
@@ -47,9 +54,12 @@ useradd \
     --shell /bin/false \
     ansible
 
-script_msg "SWITCHING USER to ansible"
+script_msg "SWITCHING USER to sysusr"
 su ansible
 
+dockerd-rootless-setuptool.sh install
+
+# ANSIBLE
 script_msg "RUNNING apt-add-repository ppa:ansible/ansible --yes"
 sudo apt-add-repository ppa:ansible/ansible --yes
 script_msg "RUNNING apt-get update"

@@ -27,7 +27,7 @@ def run_setup():
 
 
 def ensure_playbooks():
-    ansible_home = Path("/home/ansible")
+    ansible_home = Path("/home/sysusr")
     ansible_home.mkdir(exist_ok=True)
     msg(f"Moving playbooks into {ansible_home}", file=__file__)
     shutil.copytree(
