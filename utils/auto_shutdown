@@ -1,0 +1,5 @@
+#!/bin/bash
+# NOT CURRENTLY USED
+
+script_msg "REBOOTING in 1 MINUTE. To cancel, hit 'Ctrl-C' and then type 'shutdown -c'"
+shutdown -reboot +1

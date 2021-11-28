@@ -1,0 +1,87 @@
+---
+# Some useful links:
+# - Running playbooks locally: https://docs.ansible.com/ansible/latest/user_guide/playbooks_delegation.html#local-playbooks
+
+
+# PLAY 1
+- name: Set hostname
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  become_method: su
+  become_user: root
+  tasks:
+  - name: Set the hostname
+    ansible.builtin.hostname:
+      name: "{{ host_name }}"
+      use: debian
+  
+  - name: Update hosts file
+    ansible.builtin.lineinfile:
+      path: /etc/hosts
+      state: present
+      insertafter: '^127\.0\.0\.1\w+localhost' 
+      line: 127.0.0.1       foo      foo.localdomain
+      owner: root
+      group: root
+      mode: '0644'
+
+# PLAY 2
+# TODO
+# Ensure the network is configured properly
+#- name: Ensure network configuration
+#  hosts: this_rpi
+#  tasks:
+#  - name: foo
+
+# PLAY 3
+# Setup firewall
+- name: Setup firewall
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  tasks:
+  - name: Make sure ufw is enabled
+    community.general.ufw:
+      state: enabled
+
+  - name: Make sure logging is on
+    community.general.ufw:
+      logging: 'on'
+
+  - name: Permit SSH
+    community.general.ufw:
+      rule: allow
+      port: ssh
+      proto: tcp
+      src: '{{ item }}'
+    loop:
+      - 10.0.0.0/8
+      - 172.16.0.0/12
+      - 192.168.0.0/16
+
+  - name: Reload firewall (makes sure changes are applied)
+    community.general.ufw:
+      state: reloaded
+
+# PLAY 4
+# TODO
+# Ensure the network is configured properly
+- name: Setup SSH
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  tasks:
+    - name: Run ssh-keygen -A
+      ansible.builtin.command: 
+        cmd: ssh-keygen -A
+
+    - name: Run sudo mkdir /run/sshd
+      ansible.builtin.command: 
+        cmd: sudo mkdir /run/sshd
+        creates: /run/sshd
+
+#  - name: copying over sshd_config.d/ files
+
+#  - name: Run sshd -T
+#    ansible.builtin.command: sshd -T

@@ -1,5 +1,5 @@
 import io
-from syslog import syslog, LOG_NOTICE, LOG_INFO, LOG_CRIT
+from syslog import LOG_NOTICE, LOG_CRIT
 from pathlib import Path
 import os
 
@@ -13,17 +13,9 @@ try:
 except ImportError:
     LSB_ID = None
 
+from utils import msg
 
 SUPPORTED_OSs = ["Ubuntu"]
-
-
-def msg(text: str, priority: int = LOG_INFO):
-    # Priority levels are (high to low):
-    #   LOG_EMERG, LOG_ALERT, LOG_CRIT, LOG_ERR, LOG_WARNING,
-    #   LOG_NOTICE, LOG_INFO, LOG_DEBUG
-    _msg = f"SETUP @ {Path(__file__).resolve()}: {text}"
-    print(_msg)
-    syslog(priority, _msg)
 
 
 def is_raspberry_pi():
@@ -31,9 +23,11 @@ def is_raspberry_pi():
     # this function will skip the rest of the checks and return True.
     # Useful for debugging in a docker container, etc.
     env_var_name = "CHECK_FOR_RPI"
+    print()
+    print(os.environ)
+    print()
     if env_var_name in os.environ and os.environ[env_var_name] == "0":
         return True
-
     # SOURCE: https://raspberrypi.stackexchange.com/a/118473
     try:
         with io.open("/sys/firmware/devicetree/base/model", "r") as m:
@@ -46,7 +40,7 @@ def is_raspberry_pi():
 
 def ensure_lib(lib_dir: str):
     # (1) Make sure ./lib is in the path
-    msg(f"Adding {lib_dir} to PATH...")
+    msg(f"Adding {lib_dir} to PATH...", file=__file__)
     sys_path = os.environ["PATH"].split(os.pathsep)
     if lib_dir not in sys_path:
         os.environ["PATH"] = lib_dir + os.pathsep + os.environ["PATH"]
@@ -64,23 +58,25 @@ def remove_lib(lib_dir: str):
     sys_path = os.environ["PATH"].split(os.pathsep)
     if lib_dir in sys_path:
         # reconstruct $PATH without lib_dir
-        msg(f"Removing {lib_dir} from PATH...")
+        msg(f"Removing {lib_dir} from PATH...", file=__file__)
         sys_path.remove(lib_dir)
         os.environ["PATH"] = os.pathsep.join(sys_path)
         os.system("export PATH")
     else:
-        msg(f"Verified {lib_dir} not in PATH...")
+        msg(f"Verified {lib_dir} not in PATH...", file=__file__)
 
 
 def setup_rpi_ubuntu():
     """Calls the scripts defined in the `raspberry_pi_ubuntu` directory."""
-    import raspberry_pi_ubuntu
+    import raspberry_pi_ubuntu as rpu
 
-    raspberry_pi_ubuntu.run_setup()
+    rpu.run_setup()
+    rpu.ensure_playbooks()
+    rpu.ensure_inventory()
 
 
 def main():
-    msg("Starting script.", priority=LOG_NOTICE)
+    msg("Starting script.", priority=LOG_NOTICE, file=__file__)
     starting_dir = os.getcwd()
 
     setup_repo = Path("__file__").parent.resolve()
@@ -95,7 +91,8 @@ def main():
         if is_raspi is True and LSB_ID in SUPPORTED_OSs:
             msg(
                 "Device is Raspberry Pi running Ubuntu. "
-                + "Running relevant setup scripts now."
+                + "Running relevant setup scripts now.",
+                file=__file__,
             )
             setup_rpi_ubuntu()
         else:
@@ -105,6 +102,7 @@ def main():
         msg(
             "ERROR: The operating system or platform is not recognized.",
             priority=LOG_CRIT,
+            file=__file__,
         )
 
     finally:

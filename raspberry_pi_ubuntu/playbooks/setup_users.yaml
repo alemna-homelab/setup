@@ -1,0 +1,105 @@
+- name: Setup admins
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  tasks:
+  - name: Ensure shell is installed
+    ansible.builtin.apt:
+      name: "{{ item.shell }}"
+      state: present
+    loop: '{{ admins }}'
+    # since /bin/sh can't be installed...
+    ignore_errors: yes
+    
+  - name: Identify shell's path
+    ansible.builtin.command:
+      cmd: which "{{ item.shell }}"
+    register: shell_path
+    loop: '{{ admins }}'
+
+  - name: Debug msg for shell_path
+    debug:
+      msg: "{{ shell_path.results[0].stdout }}"
+
+  - name: Setup admins
+    ansible.builtin.user:
+      name: "{{ item.name }}"
+      state: present
+      shell: "{{ shell_path.results[0].stdout }}"
+      groups: [ "users", "sudo" ]
+      append: yes
+    loop: '{{ admins }}'
+
+- name: Setup users
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  tasks:
+  - name: Ensure shell is installed
+    ansible.builtin.apt:
+      name: "{{ item.shell }}"
+      state: present
+    loop: '{{ users }}'
+    # since /bin/sh can't be installed...
+    ignore_errors: yes
+    
+  - name: Identify shell's path
+    ansible.builtin.command:
+      cmd: which "{{ item.shell }}"
+    register: shell_path
+    loop: '{{ users }}'
+
+  - name: Debug msg for shell_path
+    debug:
+      # msg: "{{ item }}" for big debug
+      msg: "{{ item.stdout }}"
+    loop: "{{ shell_path.results }}"
+
+  - name: Setup users
+    ansible.builtin.user:
+      name: "{{ item.item.name }}"
+      state: present
+      shell: "{{ item.stdout }}"
+      groups: [ "users" ]
+      append: yes
+    loop: "{{ shell_path.results }}"
+
+- name: Setup devices
+  hosts: this_rpi
+  gather_facts: false
+  become: yes
+  tasks:
+  - name: Ensure 'devices' group exists
+    ansible.builtin.group:
+      name: devices
+      state: present
+      system: yes
+    
+  - name: Ensure shell is installed
+    ansible.builtin.apt:
+      name: "{{ item.shell }}"
+      state: present
+    loop: '{{ devices }}'
+    # since /bin/sh can't be installed...
+    ignore_errors: yes
+    
+  - name: Identify shell's path
+    ansible.builtin.command:
+      cmd: which "{{ item.shell }}"
+    register: shell_path
+    loop: "{{ devices }}"
+
+  - name: Debug msg for shell_path
+    debug:
+      # msg: "{{ item }}" for big debug
+      msg: "{{ item.stdout }}"
+    loop: "{{ shell_path.results }}"
+
+  - name: Setup devices
+    ansible.builtin.user:
+      name: "{{ item.item.name }}"
+      state: present
+      shell: "{{ item.stdout }}"
+      groups: [ "devices" ]
+      append: yes
+    loop: "{{ shell_path.results }}"
